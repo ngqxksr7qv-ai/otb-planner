@@ -726,7 +726,7 @@ export default function App() {
           </div>
 
           {/* Table */}
-          <div className="overflow-x-auto">
+          <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 260px)' }}>
             <table className="w-full border-collapse min-w-[900px]">
               <thead className="bg-gray-50 sticky top-0 z-10">
                 <tr>
