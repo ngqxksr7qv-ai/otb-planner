@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --color-critical: #C0392B;
+  --color-warning: #F39C12;
+  --color-healthy: #27AE60;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
