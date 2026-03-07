@@ -577,7 +577,7 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [sortConfig, setSortConfig] = useState({ column: 'alert', direction: 'asc' })
   const [filters, setFilters] = useState({ categories: [], alertLevel: 'all', minForecast: 0, search: '' })
-  const [showMonthly, setShowMonthly] = useState(true)
+  const [monthsToShow, setMonthsToShow] = useState(12)
   const [selectedRow, setSelectedRow] = useState(null)
 
   const handleFileLoaded = useCallback(({ classes, stores: fileStores }) => {
@@ -654,6 +654,16 @@ export default function App() {
     })
   }, [alertedData, filters])
 
+  const visibleMonths = useMemo(() => {
+    const jsMonth = new Date().getMonth() // 0=Jan..11=Dec
+    const currentIdx = (jsMonth - 2 + 12) % 12 // Map to MONTHS index (MAR=0)
+    const result = []
+    for (let i = 0; i < monthsToShow; i++) {
+      result.push(MONTHS[(currentIdx + i) % MONTHS.length])
+    }
+    return result
+  }, [monthsToShow])
+
   const sortedData = useMemo(() => sortClasses(filteredData, sortConfig), [filteredData, sortConfig])
 
   return (
@@ -698,10 +708,13 @@ export default function App() {
           {/* Table controls */}
           <div className="px-6 py-2 flex items-center justify-between bg-white border-b border-gray-200">
             <span className="text-sm text-gray-500">{sortedData.length} classes</span>
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <input type="checkbox" checked={showMonthly} onChange={(e) => setShowMonthly(e.target.checked)} className="rounded" />
-              <span className="text-gray-600">Show monthly columns</span>
-            </label>
+            <select value={monthsToShow} onChange={(e) => setMonthsToShow(Number(e.target.value))}
+              className="px-3 py-1.5 border border-gray-300 rounded text-sm bg-white">
+              <option value={1}>Show 1 month</option>
+              <option value={2}>Show 2 months</option>
+              <option value={3}>Show 3 months</option>
+              <option value={12}>Show 12 months</option>
+            </select>
           </div>
 
           {/* Table */}
@@ -717,9 +730,10 @@ export default function App() {
                   <SortHeader label="Annual OTB (Cost $)" column="annualOTB" sortConfig={sortConfig} onSort={setSortConfig} />
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">On Order Cost</th>
                   <SortHeader label="OTB Util %" column="otbUtilizationPct" sortConfig={sortConfig} onSort={setSortConfig} />
-                  {showMonthly && MONTHS.map(m => (
+                  {visibleMonths.map(m => (
                     <th key={m} className="px-2 py-2 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">{m}</th>
                   ))}
+                  <th className="px-2 py-2 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">Total OTB</th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Alert Months</th>
                 </tr>
               </thead>
@@ -740,7 +754,7 @@ export default function App() {
                       <td className={`px-2 py-1.5 text-right font-mono ${cls.annualOTB < 0 ? 'text-red-600 font-medium' : 'text-gray-800'}`}>{formatCurrency(cls.annualOTB)}</td>
                       <td className="px-2 py-1.5 text-right font-mono text-gray-800">{formatCurrency(cls.annualOnOrderCost)}</td>
                       <td className="px-2 py-1.5"><UtilizationBar pct={cls.otbUtilizationPct} /></td>
-                      {showMonthly && MONTHS.map(m => (
+                      {visibleMonths.map(m => (
                         <MonthCell
                           key={m}
                           month={m}
@@ -750,6 +764,9 @@ export default function App() {
                           otbValue={cls.otbCostOriginal?.[m] || 0}
                         />
                       ))}
+                      <td className={`px-2 py-1.5 text-right text-xs font-mono font-medium whitespace-nowrap ${visibleMonths.reduce((s, m) => s + (cls.otbCostOriginal?.[m] || 0), 0) < 0 ? 'text-red-600' : 'text-gray-800'}`}>
+                        {formatCurrency(visibleMonths.reduce((s, m) => s + (cls.otbCostOriginal?.[m] || 0), 0))}
+                      </td>
                       <td className="px-2 py-1.5 text-xs text-gray-600 max-w-[120px] truncate" title={cls.alertMonths.join(', ')}>
                         {cls.alertMonths.length > 0 ? cls.alertMonths.join(', ') : '\u2014'}
                       </td>
