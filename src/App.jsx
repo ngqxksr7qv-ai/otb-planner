@@ -4,6 +4,17 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 
 const MONTHS = ['MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC', 'JAN', 'FEB']
 
+// Only alert on current month and next month — future months are not actionable
+function getAlertableMonths() {
+  const jsMonth = new Date().getMonth() // 0=Jan..11=Dec
+  const currentIdx = (jsMonth - 2 + 12) % 12 // Map to MONTHS index (MAR=0)
+  const months = [MONTHS[currentIdx]]
+  if (currentIdx + 1 < MONTHS.length) months.push(MONTHS[currentIdx + 1])
+  return months
+}
+
+const ALERTABLE_MONTHS = getAlertableMonths()
+
 const PRESETS = {
   small: { warning: 1000, critical: 2500, label: 'Small store' },
   mid: { warning: 2000, critical: 5000, label: 'Mid-volume' },
@@ -164,7 +175,8 @@ function computeAlerts(classes, settings) {
     const alertMonths = []
     let maxLevel = 'none'
 
-    for (const m of MONTHS) {
+    // Only alert on current + next month (future months aren't actionable)
+    for (const m of ALERTABLE_MONTHS) {
       const absVariance = Math.abs(cls.monthlyVariance[m])
       if (absVariance >= settings.criticalThreshold) {
         alertMonths.push(m)
@@ -175,9 +187,9 @@ function computeAlerts(classes, settings) {
       }
     }
 
-    // Flag negative OTB months
+    // Flag negative OTB for current/next month only
     if (settings.flagNegativeOTB && cls.otbCostOriginal) {
-      for (const m of MONTHS) {
+      for (const m of ALERTABLE_MONTHS) {
         if (cls.otbCostOriginal[m] < 0 && !alertMonths.includes(m)) {
           alertMonths.push(m)
           if (maxLevel === 'none') maxLevel = 'warning'
@@ -445,16 +457,19 @@ function UtilizationBar({ pct }) {
   )
 }
 
-function MonthCell({ value, variance, settings, otbValue }) {
+function MonthCell({ value, variance, settings, otbValue, month }) {
   let bg = ''
-  const absVariance = Math.abs(variance)
+  const isAlertable = ALERTABLE_MONTHS.includes(month)
 
-  if (absVariance >= settings.criticalThreshold) {
-    bg = 'bg-red-200'
-  } else if (absVariance >= settings.warningThreshold) {
-    bg = 'bg-yellow-100'
-  } else if (otbValue < 0) {
-    bg = 'bg-red-100'
+  if (isAlertable) {
+    const absVariance = Math.abs(variance)
+    if (absVariance >= settings.criticalThreshold) {
+      bg = 'bg-red-200'
+    } else if (absVariance >= settings.warningThreshold) {
+      bg = 'bg-yellow-100'
+    } else if (otbValue < 0) {
+      bg = 'bg-red-100'
+    }
   }
 
   return (
@@ -698,8 +713,8 @@ export default function App() {
                   <SortHeader label="Category" column="category" sortConfig={sortConfig} onSort={setSortConfig} />
                   <SortHeader label="Class #" column="classCode" sortConfig={sortConfig} onSort={setSortConfig} />
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Class Description</th>
-                  <SortHeader label="Annual Forecast" column="annualForecast" sortConfig={sortConfig} onSort={setSortConfig} />
-                  <SortHeader label="Annual OTB" column="annualOTB" sortConfig={sortConfig} onSort={setSortConfig} />
+                  <SortHeader label="Annual Forecast (Retail $)" column="annualForecast" sortConfig={sortConfig} onSort={setSortConfig} />
+                  <SortHeader label="Annual OTB (Cost $)" column="annualOTB" sortConfig={sortConfig} onSort={setSortConfig} />
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">On Order Cost</th>
                   <SortHeader label="OTB Util %" column="otbUtilizationPct" sortConfig={sortConfig} onSort={setSortConfig} />
                   {showMonthly && MONTHS.map(m => (
@@ -728,6 +743,7 @@ export default function App() {
                       {showMonthly && MONTHS.map(m => (
                         <MonthCell
                           key={m}
+                          month={m}
                           value={cls.otbCostOriginal?.[m]}
                           variance={cls.monthlyVariance[m]}
                           settings={settings}
