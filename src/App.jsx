@@ -473,7 +473,7 @@ function MonthCell({ value, variance, settings, otbValue, month }) {
   }
 
   return (
-    <td className={`px-2 py-1.5 text-right text-xs whitespace-nowrap ${bg} ${value < 0 ? 'text-red-600 font-medium' : 'text-gray-700'}`}>
+    <td className={`px-2 py-1.5 text-right whitespace-nowrap ${bg} ${value < 0 ? 'text-red-600 font-medium' : 'text-gray-700'}`}>
       {formatCurrency(value)}
     </td>
   )
@@ -742,7 +742,6 @@ export default function App() {
                     <th key={m} className="px-2 py-2 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">{m}</th>
                   ))}
                   <th className="px-2 py-2 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">Total OTB</th>
-                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Alert Months</th>
                 </tr>
               </thead>
               <tbody>
@@ -772,11 +771,8 @@ export default function App() {
                           otbValue={cls.otbCostOriginal?.[m] || 0}
                         />
                       ))}
-                      <td className={`px-2 py-1.5 text-right text-xs font-mono font-medium whitespace-nowrap ${visibleMonths.reduce((s, m) => s + (cls.otbCostOriginal?.[m] || 0), 0) < 0 ? 'text-red-600' : 'text-gray-800'}`}>
+                      <td className={`px-2 py-1.5 text-right font-mono font-medium whitespace-nowrap ${visibleMonths.reduce((s, m) => s + (cls.otbCostOriginal?.[m] || 0), 0) < 0 ? 'text-red-600' : 'text-gray-800'}`}>
                         {formatCurrency(visibleMonths.reduce((s, m) => s + (cls.otbCostOriginal?.[m] || 0), 0))}
-                      </td>
-                      <td className="px-2 py-1.5 text-xs text-gray-600 max-w-[120px] truncate" title={cls.alertMonths.join(', ')}>
-                        {cls.alertMonths.length > 0 ? cls.alertMonths.join(', ') : '\u2014'}
                       </td>
                     </tr>
                     {selectedRow === cls.id && <DetailDrawer cls={cls} />}
