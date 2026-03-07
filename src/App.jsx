@@ -578,6 +578,7 @@ export default function App() {
   const [sortConfig, setSortConfig] = useState({ column: 'alert', direction: 'asc' })
   const [filters, setFilters] = useState({ categories: [], alertLevel: 'all', minForecast: 0, search: '' })
   const [monthsToShow, setMonthsToShow] = useState(12)
+  const [fontSize, setFontSize] = useState(13)
   const [selectedRow, setSelectedRow] = useState(null)
 
   const handleFileLoaded = useCallback(({ classes, stores: fileStores }) => {
@@ -667,7 +668,7 @@ export default function App() {
   const sortedData = useMemo(() => sortClasses(filteredData, sortConfig), [filteredData, sortConfig])
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-[13px]">
+    <div className="min-h-screen bg-gray-50 font-sans" style={{ fontSize: `${fontSize}px` }}>
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-4 flex-wrap">
         <h1 className="text-lg font-bold text-gray-900 mr-4">OTB Dashboard</h1>
@@ -679,7 +680,14 @@ export default function App() {
             {stores.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
         )}
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          <select value={fontSize} onChange={(e) => setFontSize(Number(e.target.value))}
+            className="px-2 py-1.5 border border-gray-300 rounded text-sm bg-white" title="Font size">
+            <option value={11}>Font: Small</option>
+            <option value={13}>Font: Default</option>
+            <option value={15}>Font: Large</option>
+            <option value={18}>Font: X-Large</option>
+          </select>
           <button onClick={() => setSettingsOpen(!settingsOpen)}
             className="p-2 rounded hover:bg-gray-100 transition-colors" title="Settings">
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
