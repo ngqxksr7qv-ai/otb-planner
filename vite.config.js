@@ -4,5 +4,6 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   base: '/otb-planner/',
+  build: { outDir: 'docs' },
   plugins: [react(), tailwindcss()],
 })
