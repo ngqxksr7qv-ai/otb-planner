@@ -575,6 +575,7 @@ export default function App() {
   const [selectedStore, setSelectedStore] = useState('ALL')
   const [settings, setSettings] = useState(DEFAULT_SETTINGS)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [dashboardVisible, setDashboardVisible] = useState(true)
   const [sortConfig, setSortConfig] = useState({ column: 'alert', direction: 'asc' })
   const [filters, setFilters] = useState({ categories: [], alertLevel: 'all', minForecast: 0, search: '' })
   const [monthsToShow, setMonthsToShow] = useState(12)
@@ -710,12 +711,25 @@ export default function App() {
         </div>
       ) : (
         <>
-          <SummaryBar data={alertedData} />
-          <FilterBar categories={categories} filters={filters} onFilterChange={setFilters} />
+          {dashboardVisible && (
+            <>
+              <SummaryBar data={alertedData} />
+              <FilterBar categories={categories} filters={filters} onFilterChange={setFilters} />
+            </>
+          )}
 
           {/* Table controls */}
           <div className="px-6 py-2 flex items-center justify-between bg-white border-b border-gray-200">
-            <span className="text-sm text-gray-500">{sortedData.length} classes</span>
+            <div className="flex items-center gap-3">
+              <button onClick={() => setDashboardVisible(!dashboardVisible)}
+                className="px-3 py-1 border border-gray-300 rounded text-sm bg-white hover:bg-gray-50 transition-colors flex items-center gap-1">
+                <svg className={`w-4 h-4 text-gray-500 transition-transform ${dashboardVisible ? '' : '-rotate-90'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+                {dashboardVisible ? 'Hide Dashboard' : 'Show Dashboard'}
+              </button>
+              <span className="text-sm text-gray-500">{sortedData.length} classes</span>
+            </div>
             <select value={monthsToShow} onChange={(e) => setMonthsToShow(Number(e.target.value))}
               className="px-3 py-1.5 border border-gray-300 rounded text-sm bg-white">
               <option value={1}>Show 1 month</option>
@@ -726,7 +740,7 @@ export default function App() {
           </div>
 
           {/* Table */}
-          <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 260px)' }}>
+          <div className="overflow-auto" style={{ maxHeight: dashboardVisible ? 'calc(100vh - 260px)' : 'calc(100vh - 140px)' }}>
             <table className="w-full border-collapse min-w-[900px]">
               <thead className="bg-gray-50 sticky top-0 z-10">
                 <tr>
