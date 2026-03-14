@@ -258,8 +258,8 @@ function FileUpload({ onFileLoaded }) {
 
   const processFile = useCallback((file) => {
     setError(null)
-    if (!file.name.endsWith('.xlsx')) {
-      setError('Please upload an .xlsx file in the Kitchen Collage OTB format.')
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.csv')) {
+      setError('Please upload an .xlsx or .csv file in the Kitchen Collage OTB format.')
       return
     }
     const reader = new FileReader()
@@ -289,8 +289,8 @@ function FileUpload({ onFileLoaded }) {
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
       >
-        Drop .xlsx or click to upload
-        <input ref={inputRef} type="file" accept=".xlsx" className="hidden" onChange={(e) => e.target.files[0] && processFile(e.target.files[0])} />
+        Drop .xlsx/.csv or click to upload
+        <input ref={inputRef} type="file" accept=".xlsx,.csv" className="hidden" onChange={(e) => e.target.files[0] && processFile(e.target.files[0])} />
       </div>
       {error && <span className="text-red-600 text-sm">{error}</span>}
     </div>
